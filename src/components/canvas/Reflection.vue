@@ -10,7 +10,7 @@
 
 <script>
 export default {
-  name: 'Reflect',
+  name: 'Reflection',
   data () {
     return {
       // unit: ms
