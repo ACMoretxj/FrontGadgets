@@ -61,7 +61,7 @@ export default {
         group: [ { label: '混合运算', value: 'mixed' }, { label: '带有括号', value: 'bracket' }, { label: '这个没用', value: 'extra' } ],
         checkedList: []
       },
-      expression: '',
+      expression: ''
     }
   },
 
@@ -104,7 +104,7 @@ export default {
       const isDigit = token => token !== undefined && !ops.includes(token)
       // add brackets
       if (this.checkboxes.checkedList.includes('bracket')) {
-        for (let i = 0; i < parseInt('' + this.difficulty / 2); ++ i) {
+        for (let i = 0; i < parseInt('' + this.difficulty / 2); ++i) {
           // randomly choose two indexes from range [0, nums.length] in order to assure the position of brackets
           const choices = _.sampleSize(Array.from(new Array(nums.length + 1), (val, idx) => idx), 2)
           let max = Math.max.apply(null, choices)
