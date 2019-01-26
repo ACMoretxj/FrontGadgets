@@ -94,8 +94,8 @@ export default {
       const numbers = Array.from(new Array(this.range.max - this.range.min + 1), (val, idx) => idx + this.range.min)
       const operators = this.checkboxes.checkedList.includes('mixed') ? _.flatten(originOperators) : _.slice(_.sample(originOperators))
       // select `exprSize` numbers and `exprSize - 1` operators
-      const nums = _.sampleSize(_.flatMap(numbers, val => _.fill(new Array(exprSize), '' + val)), exprSize)
-      const ops = _.sampleSize(_.flatMap(operators, val => _.fill(new Array(exprSize), val)), exprSize - 1)
+      const nums = _.sampleSize(_.shuffle(_.flatMap(numbers, val => _.fill(new Array(exprSize), '' + val))), exprSize)
+      const ops = _.sampleSize(_.shuffle(_.flatMap(operators, val => _.fill(new Array(exprSize), val))), exprSize - 1)
       // cross merge `nums` and `ops`
       ops.forEach((val, idx) => nums.splice(2 * idx + 1, 0, val))
       // judges whether a token is a number, the token includes '|' also counts, such as '(|1|+|2|)|'
@@ -103,8 +103,9 @@ export default {
       // const isDigit = token => token !== undefined && (!_.isNaN(Number(token)) || token.includes('|'))
       const isDigit = token => token !== undefined && !ops.includes(token)
       // add brackets
+      const bracketNum = Math.floor(this.difficulty / 2)
       if (this.checkboxes.checkedList.includes('bracket')) {
-        for (let i = 0; i < parseInt('' + this.difficulty / 2); ++i) {
+        for (let i = 0; i < bracketNum; ++i) {
           // randomly choose two indexes from range [0, nums.length] in order to assure the position of brackets
           const choices = _.sampleSize(Array.from(new Array(nums.length + 1), (val, idx) => idx), 2)
           let max = Math.max.apply(null, choices)
@@ -115,9 +116,15 @@ export default {
           // if the min value points to the operator, move it backward by one step
           // so that the left bracket will be in front of the number
           min = !isDigit(nums[min]) ? min - 1 : min
-          // when `max - min <= 1`, it means that there is only a single number
-          // in the brackets, expand the scope instead
-          if (max - min <= 1) {
+          // distance restriction between `min` and `max` so that there will
+          // be not exist expressions such as `1 + (2) + 3` or (((1 + 2 + 3)))
+          const minDist = 3
+          const maxDist = (Math.ceil(nums.length / 2) - bracketNum + i) * 2 - 1
+          while (max - min > maxDist) {
+            max -= 2
+            min += 2
+          }
+          if (max - min < minDist) {
             max = Math.min(max + 2, nums.length)
             min = Math.max(min - 2, 0)
           }
