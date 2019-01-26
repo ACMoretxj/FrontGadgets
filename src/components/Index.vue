@@ -12,8 +12,8 @@
 </template>
 
 <script>
-import VHead from '@/components/util/Head'
-import LinkHub from '@/components/util/LinkHub'
+import VHead from '../components/util/Head'
+import LinkHub from '../components/util/LinkHub'
 
 export default {
   name: 'Index',
@@ -33,6 +33,7 @@ export default {
         {
           category: 'Computer Basics',
           content: [
+            { name: '表达式生成器', link: { name: 'algorithm-generate-expression' } },
             { name: '前缀/后缀表达式', link: { name: 'algorithm-polish-expression' } }
           ]
         }

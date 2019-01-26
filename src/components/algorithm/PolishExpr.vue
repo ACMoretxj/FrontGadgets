@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import VHead from '@/components/util/Head'
+import VHead from '../util/Head'
 import ARow from 'ant-design-vue/es/grid/Row'
 import ACol from 'ant-design-vue/es/grid/Col'
 
