@@ -87,7 +87,7 @@ export default {
     validate () {
       try {
         // eslint-disable-next-line no-eval
-        eval(this.expression)
+        eval(this.expression.replace('^', '**'))
         return !(this.showAlert = false)
       } catch (error) {
         return !(this.showAlert = true)
