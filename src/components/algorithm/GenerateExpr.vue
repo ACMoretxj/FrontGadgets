@@ -22,7 +22,7 @@
       <a-col :span="6">
         <a-row type="flex" justify="space-around" align="middle">
           <a-col :span="6" v-for="button in buttons" :key="button.alias">
-            <a-button type="primary" :size="'large'" :loading="button.loading" @click="button.handler(button)">{{ button.text }}</a-button>
+            <a-button type="primary" :size="'large'" :disabled="button.disabled" :loading="button.loading" @click="button.handler(button)">{{ button.text }}</a-button>
           </a-col>
         </a-row>
       </a-col>
@@ -54,11 +54,17 @@ export default {
       range: { min: 1, max: 100 },
       difficulty: 3,
       buttons: [
-        { text: '生成表达式', alias: 'generate-expression', handler: this.generateExpression, loading: false }
+        { text: '生成表达式', alias: 'generate-expression', handler: this.generateExpression, disabled: true, loading: false }
       ],
       checkboxes: {
         checkAll: { indeterminate: false, checked: false },
-        group: [ { label: '混合运算', value: 'mixed' }, { label: '带有括号', value: 'bracket' }, { label: '这个没用', value: 'extra' } ],
+        group: [
+          { label: '加减', value: 'add-sub', operators: [ '+', '-' ] },
+          { label: '乘除', value: 'mul-div', operators: [ '*', '/' ] },
+          { label: '乘方', value: 'power', operators: [ '^' ] },
+          { label: '括号', value: 'bracket', operators: [ ] },
+          { label: '易算', value: 'manual-easy', operators: [ ] }
+        ],
         checkedList: []
       },
       expression: ''
@@ -79,7 +85,7 @@ export default {
     validate () {
       try {
         // eslint-disable-next-line no-eval
-        eval(this.expression.replace('^', '**'))
+        eval(this.expression)
         return true
       } catch (error) {
         return false
@@ -90,9 +96,8 @@ export default {
       button.loading = true
       await new Promise(resolve => setTimeout(resolve, 500))
       const exprSize = this.difficulty + 1
-      const originOperators = [ [ '+', '-' ], [ '*', '/' ], [ '^' ] ]
       const numbers = Array.from(new Array(this.range.max - this.range.min + 1), (val, idx) => idx + this.range.min)
-      const operators = this.checkboxes.checkedList.includes('mixed') ? _.flatten(originOperators) : _.slice(_.sample(originOperators))
+      const operators = _.flatMap(this.checkboxes.checkedList, item => _.find(this.checkboxes.group, { value: item }).operators)
       // select `exprSize` numbers and `exprSize - 1` operators
       const nums = _.sampleSize(_.shuffle(_.flatMap(numbers, val => _.fill(new Array(exprSize), '' + val))), exprSize)
       const ops = _.sampleSize(_.shuffle(_.flatMap(operators, val => _.fill(new Array(exprSize), val))), exprSize - 1)
@@ -144,6 +149,14 @@ export default {
         this.generateExpression(button)
       }
       button.loading = false
+    }
+  },
+
+  watch: {
+    'checkboxes.checkedList' (val) {
+      const disabled = !(val.includes('add-sub') || val.includes('mul-div') || val.includes('power'))
+      // eslint-disable-next-line no-return-assign
+      this.buttons.forEach(button => button.disabled = disabled)
     }
   }
 }
