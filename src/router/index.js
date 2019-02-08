@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Index from '../components/Index'
 import Canvas from '../components/canvas/Index'
 import Reflection from '../components/canvas/Reflection'
+import Maze from '../components/canvas/Maze'
 import Algorithm from '../components/algorithm/Index'
 import GenerateExpr from '../components/algorithm/GenerateExpr'
 import PolishExpr from '../components/algorithm/PolishExpr'
@@ -25,6 +26,11 @@ export default new Router({
           path: 'reflection/',
           name: 'canvas-reflection',
           component: Reflection
+        },
+        {
+          path: 'maze/',
+          name: 'canvas-maze',
+          component: Maze
         }
       ]
     },
