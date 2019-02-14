@@ -7,6 +7,7 @@ import Maze from '../components/canvas/Maze'
 import Algorithm from '../components/algorithm/Index'
 import GenerateExpr from '../components/algorithm/GenerateExpr'
 import PolishExpr from '../components/algorithm/PolishExpr'
+import NumberBase from '../components/algorithm/NumberBase'
 
 Vue.use(Router)
 
@@ -48,6 +49,11 @@ export default new Router({
           path: 'polish-expression/',
           name: 'algorithm-polish-expression',
           component: PolishExpr
+        },
+        {
+          path: 'number-base/',
+          name: 'algorithm-number-base',
+          component: NumberBase
         }
       ]
     }
