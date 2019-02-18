@@ -37,6 +37,8 @@
 </template>
 
 <script>
+/* eslint-disable one-var */
+
 import VHead from '../util/Head'
 import ARow from 'ant-design-vue/es/grid/Row'
 import ACol from 'ant-design-vue/es/grid/Col'
@@ -62,12 +64,13 @@ export default {
           { label: '加减', value: 'add-sub', operators: [ '+', '-' ] },
           { label: '乘除', value: 'mul-div', operators: [ '*', '/' ] },
           { label: '乘方', value: 'power', operators: [ '^' ] },
-          { label: '括号', value: 'bracket', operators: [ ] },
+          // { label: '括号', value: 'bracket', operators: [ ] },
           { label: '易算', value: 'manual-easy', operators: [ ] }
         ],
         checkedList: []
       },
-      expression: ''
+      expression: '',
+      answer: 0
     }
   },
 
@@ -82,17 +85,99 @@ export default {
       this.checkboxes.checkAll.checked = checkedList.length === this.checkboxes.group.length
     },
 
-    validate () {
-      try {
-        // eslint-disable-next-line no-eval
-        eval(this.expression)
-        return true
-      } catch (error) {
-        return false
+    /**
+     * expand a single number into an expression, the scale of the expression is
+     * determined by the `depth`
+     * @param num the specified number, also the result of the expression
+     * @param operators the available operators
+     * @param depth the expand depth, the function will directly return `num` when depth is 0
+     * @param op1 the left side operator of the number in origin expression
+     * @param op2 the right side operator of the number in origin expression
+     * @return {Array<string>} a list of elements make up of the result expression
+     */
+    expandExpression (num, operators, depth, op1, op2) {
+      if (depth <= 0) {
+        return [ num ]
       }
+      const range = (l, r) => Array.from(new Array(r - l + 1), (i, j) => j + l)
+      const opMap = { '(': 0, ')': 0, '+': 1, '-': 1, '*': 2, '/': 2, '^': 3 }
+      let op = _.sample(operators, 1)
+      // the left operator will seize the operation process so that 'equal' should be considers
+      let needBracket = opMap[op1] >= opMap[op] || opMap[op2] > opMap[op]
+      let leftOpr = 0, rightOpr = 0, tail = [ ]
+
+      switch (op) {
+        case '+':
+          rightOpr = _.sample(range(this.range.min, num - 1))
+          leftOpr = num - rightOpr
+          // when num is 1, the operator should be changed to minus
+          if (!rightOpr) {
+            op = '-'
+            rightOpr = _.sample(range(this.range.min, this.range.max))
+            leftOpr = num + rightOpr
+          }
+          break
+        case '-':
+          rightOpr = _.sample(range(this.range.min, this.range.max))
+          leftOpr = num + rightOpr
+          break
+        case '*':
+          rightOpr = _.sample(range(2, Math.max(2, Math.floor(num / 2))))
+          leftOpr = Math.ceil(num / rightOpr)
+          // if the result is not integer, transform the expression a * b into a' * b' +(-) c
+          if (leftOpr * rightOpr !== num) {
+            tail = [ leftOpr * rightOpr > num ? '-' : '+', Math.abs(leftOpr * rightOpr - num) ]
+            needBracket = opMap[op1] >= opMap[tail[0]] || opMap[op2] > opMap[tail[0]]
+          }
+          break
+        case '/':
+          rightOpr = _.sample(range(2, this.range.max))
+          leftOpr = num * rightOpr
+          break
+        case '^':
+          rightOpr = _.sample(range(2, Math.max(2, Math.ceil(Math.log(num) / Math.log(2)))))
+          leftOpr = Math.ceil(num ** (1 / rightOpr))
+          // if the result is not integer, transform the expression a ^ b into a' ^ b' +(-) c
+          if (leftOpr ** rightOpr !== num) {
+            tail = [ leftOpr ** rightOpr > num ? '-' : '+', Math.abs(leftOpr ** rightOpr - num) ]
+            needBracket = opMap[op1] >= opMap[tail[0]] || opMap[op2] > opMap[tail[0]]
+          }
+          break
+      }
+
+      // flag = 1: only expand left operand
+      // flag = 2: only expand right operand
+      // flag = 3: expand both left and right operands
+      const flag = _.sample([ 1, 2 ], 1)
+      const leftExpr = this.expandExpression(leftOpr, operators, (flag === 1 || flag === 3) ? depth - 1 : 0, needBracket ? '(' : op1, op)
+      // the right operator should be handled differently, because the '*' or '^' will
+      // create a `tail`, so the right operator of `rightOpr` will also change
+      const rightExpr = this.expandExpression(rightOpr, operators, (flag === 2 || flag === 3) ? depth - 1 : 0, op, tail.length > 0 ? tail[0] : (needBracket ? ')' : op2))
+      return _.concat(needBracket ? [ '(' ] : [ '' ], leftExpr, op, rightExpr, tail, needBracket ? [ ')' ] : [ '' ])
     },
 
     async generateExpression (button) {
+      button.loading = true
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const operators = _.flatMap(this.checkboxes.checkedList, item => _.find(this.checkboxes.group, { value: item }).operators)
+      this.answer = _.sample(Array.from(new Array(this.range.max - this.range.min + 1), (i, j) => j + this.range.min + 1))
+      this.expression = this.expandExpression(this.answer, operators, this.difficulty, null, null).join(' ').replace(/\s\s+/g, ' ').trim()
+      button.loading = false
+    },
+
+    /**
+     * @deprecated 2019.02.18
+     *
+     * primary algorithm, basic mechanism is as follows
+     * 1. generate a series of numbers
+     * 2. insert operators between numbers
+     * 3. insert brackets between number and operator
+     * but in this way the expression generated often can not be calculate,
+     * so I decide to generate it in another way: expanding
+     * @param button
+     * @return {Promise<void>}
+     */
+    async __generateExpression (button) {
       button.loading = true
       await new Promise(resolve => setTimeout(resolve, 500))
       const exprSize = this.difficulty + 1
@@ -144,8 +229,18 @@ export default {
         }
       }
       this.expression = _.flatMap(nums, val => val.split('|')).join(' ')
+
+      const validate = () => {
+        try {
+          // eslint-disable-next-line no-eval
+          eval(this.expression)
+          return true
+        } catch (error) {
+          return false
+        }
+      }
       // invalidate the generated expression
-      if (!this.validate()) {
+      if (!validate()) {
         this.generateExpression(button)
       }
       button.loading = false
@@ -157,6 +252,7 @@ export default {
       const disabled = !(val.includes('add-sub') || val.includes('mul-div') || val.includes('power'))
       // eslint-disable-next-line no-return-assign
       this.buttons.forEach(button => button.disabled = disabled)
+      this.range.max = val.includes('manual-easy') ? 10 : 100
     }
   }
 }

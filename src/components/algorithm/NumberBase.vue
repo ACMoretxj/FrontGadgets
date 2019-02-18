@@ -18,9 +18,9 @@
 </template>
 
 <script>
-  /* eslint-disable */
+/* eslint-disable */
 
-  import VHead from '../util/Head'
+import VHead from '../util/Head'
 import ARow from 'ant-design-vue/es/grid/Row'
 import ACol from 'ant-design-vue/es/grid/Col'
 
@@ -101,9 +101,10 @@ export default {
     },
 
     currentBase (val, oVal) {
-      const nb = { 'bin': 2, 'oct': 8, dec: 10, 'hex': 16 }this.exprTokens.map(token => !nums.includes(token[0]) ? token : (val === 'dec' ? parseInt(token, nb[val]) : parseInt(token, nb[oVal]).toString(nb[val])))
+      const nb = { 'bin': 2, 'oct': 8, dec: 10, 'hex': 16 }
+      this.exprTokens.map(token => !nums.includes(token[0]) ? token : (val === 'dec' ? parseInt(token, nb[val]) : parseInt(token, nb[oVal]).toString(nb[val])))
       const nums = _.concat(Array.from(new Array(10), (num, idx) => '' + idx), [ 'A', 'B', 'C', 'D', 'E', 'F' ])
-      this.exprTokens =
+      // this.exprTokens =
     }
   }
 }
