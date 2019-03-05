@@ -8,6 +8,8 @@ import Algorithm from '../components/algorithm/Index'
 import GenerateExpr from '../components/algorithm/GenerateExpr'
 import PolishExpr from '../components/algorithm/PolishExpr'
 import NumberBase from '../components/algorithm/NumberBase'
+import Security from '../components/security/Index'
+import PasswordGenerator from '../components/security/PasswordGenerator'
 
 Vue.use(Router)
 
@@ -54,6 +56,18 @@ export default new Router({
           path: 'number-base/',
           name: 'algorithm-number-base',
           component: NumberBase
+        }
+      ]
+    },
+    {
+      path: '/security/',
+      name: 'security',
+      component: Security,
+      children: [
+        {
+          path: 'password-generator/',
+          name: 'security-password-generator',
+          component: PasswordGenerator
         }
       ]
     }

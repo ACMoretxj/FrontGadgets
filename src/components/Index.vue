@@ -37,6 +37,12 @@ export default {
             { name: '表达式生成器', link: { name: 'algorithm-generate-expression' } },
             { name: '前缀/后缀表达式', link: { name: 'algorithm-polish-expression' } }
           ]
+        },
+        {
+          category: 'Cyber-Security',
+          content: [
+            { name: '密码生成器', link: { name: 'security-password-generator' } }
+          ]
         }
       ]
     }
