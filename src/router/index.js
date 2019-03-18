@@ -10,6 +10,7 @@ import PolishExpr from '../components/algorithm/PolishExpr'
 import NumberBase from '../components/algorithm/NumberBase'
 import Security from '../components/security/Index'
 import PasswordGenerator from '../components/security/PasswordGenerator'
+import Graph from '../components/algorithm/Graph'
 
 Vue.use(Router)
 
@@ -56,6 +57,11 @@ export default new Router({
           path: 'number-base/',
           name: 'algorithm-number-base',
           component: NumberBase
+        },
+        {
+          path: 'graph/',
+          name: 'algorithm-graph',
+          component: Graph
         }
       ]
     },

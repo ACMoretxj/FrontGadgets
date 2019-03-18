@@ -35,7 +35,8 @@ export default {
           content: [
             { name: '进制转换', link: { name: 'algorithm-number-base' } },
             { name: '表达式生成器', link: { name: 'algorithm-generate-expression' } },
-            { name: '前缀/后缀表达式', link: { name: 'algorithm-polish-expression' } }
+            { name: '前缀/后缀表达式', link: { name: 'algorithm-polish-expression' } },
+            { name: '图论', link: { name: 'algorithm-graph' } }
           ]
         },
         {
