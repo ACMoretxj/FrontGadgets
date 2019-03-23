@@ -14,6 +14,11 @@
             <a-input type="number" size="large" addonBefore="边的个数" :value="completeGraph.edge" disabled="true"/>
           </a-col>
         </a-row>
+        <a-row type="flex" justify="center" align="middle" style="margin-top: 15px;">
+          <a-col :span="4">
+            <a-input type="number" size="large" addonBefore="对角线的个数" :value="completeGraph.diagonal" disabled="true"/>
+          </a-col>
+        </a-row>
       </a-tab-pane>
       <a-tab-pane tab="路径和环" key="2">
         <a-row :gutter="4" type="flex" justify="center" align="middle">
@@ -71,7 +76,7 @@ export default {
   components: { ARow, ACol },
   data () {
     return {
-      completeGraph: { vertex: null, edge: null },
+      completeGraph: { vertex: null, edge: null, diagonal: null },
       button: { text: '计算路径', alias: 'generate-expression', handler: this.calculatePath, disabled: false, loading: false },
       // represent a graph with adjacent table
       graph: { maxVertex: 16, vertexInput: 'A B C D', edgeInput: 'AB AC BC CD', edges: [], next: {} },
@@ -192,6 +197,7 @@ export default {
       }
       this.completeGraph.vertex = val = parseInt(nums.join(''))
       this.completeGraph.edge = val * (val - 1) / 2
+      this.completeGraph.diagonal = this.completeGraph.edge - val
     }
   }
 }
