@@ -20,7 +20,9 @@
           </a-col>
         </a-row>
       </a-tab-pane>
-      <a-tab-pane tab="路径和环" key="2">
+      <a-tab-pane tab="图的表示" key="2">
+      </a-tab-pane>
+      <a-tab-pane tab="路径和环" key="3">
         <a-row :gutter="4" type="flex" justify="center" align="middle">
           <a-col :span="5">
             <a-input size="large" v-model="graph.vertexInput" addonBefore="点集" placeholder="请输入点集，空格隔开"/>
@@ -31,7 +33,7 @@
         </a-row>
         <a-row type="flex" justify="center" align="middle" style="margin-top: 15px;">
           <a-col :span="10">
-            <a-slider v-model="path.lenLimit" :min="0" :max="100" :tipFormatter="val => val === 0 ? '不限长度' : `长度 ${val}`">路径/环的长度</a-slider>
+            <a-slider v-model.number="path.lenLimit" :min="0" :max="100" :tipFormatter="val => val === 0 ? '不限长度' : `长度 ${val}`">路径/环的长度</a-slider>
           </a-col>
         </a-row>
         <a-row type="flex" justify="center" align="middle" style="margin: 24px 0 24px 0;">
@@ -42,16 +44,17 @@
         <a-row type="flex" justify="center" align="middle" style="margin-top: 15px;">
           <a-col :span="10">
             <a-collapse>
-              <a-collapse-panel :header="`所有路径: ${path.allPath.length} 条`" key="1">
-                {{ path.allPath.join('\n') }}
+              <a-collapse-panel :header="`所有路径: ${renderPaths(path.allPath).length} 条`" key="1">
+                {{ renderPaths(path.allPath).join('\n') }}
               </a-collapse-panel>
-              <a-collapse-panel :header="`简单路径: ${path.simplePath.length} 条`" key="2">
-                {{ path.simplePath.join('\n') }}
+              <a-collapse-panel :header="`简单路径: ${renderPaths(path.simplePath).length} 条`" key="2">
+                {{ renderPaths(path.simplePath).join('\n') }}
               </a-collapse-panel>
-              <a-collapse-panel :header="`环路: ${path.circlePath.length} 条`" key="3">
-                {{ path.circlePath.join('\n') }}
+              <a-collapse-panel :header="`环路: ${renderPaths(path.circlePath).length} 条`" key="3">
+                {{ renderPaths(path.circlePath).join('\n') }}
               </a-collapse-panel>
-              <a-collapse-panel :header="`欧拉回路: ${path.eulerPath.length} 条`" key="4">
+              <a-collapse-panel :header="`欧拉回路: ${renderPaths(path.eulerPath).length} 条`" key="4">
+                {{ renderPaths(path.eulerPath).join('\n') }}
               </a-collapse-panel>
             </a-collapse>
           </a-col>
@@ -79,8 +82,8 @@ export default {
       completeGraph: { vertex: null, edge: null, diagonal: null },
       button: { text: '计算路径', alias: 'generate-expression', handler: this.calculatePath, disabled: false, loading: false },
       // represent a graph with adjacent table
-      graph: { maxVertex: 16, vertexInput: 'A B C D', edgeInput: 'AB AC BC CD', edges: [], next: {} },
-      path: { lenLimit: 0, allPath: [], simplePath: [], circlePath: [], eulerPath: [] },
+      graph: { maxVertex: 16, vertexInput: 'A B C D E F', edgeInput: 'AC AD BD DE DF EF', edges: [], next: {} },
+      path: { lenLimit: 0, allPath: new Set(), simplePath: new Set(), circlePath: new Set(), eulerPath: new Set() },
       errorMessage: null
     }
   },
@@ -89,10 +92,11 @@ export default {
     clean () {
       this.graph.edges = []
       this.graph.next = {}
-      this.path.allPath = []
-      this.path.simplePath = []
-      this.path.circlePath = []
-      this.path.eulerPath = []
+      this.path.lenLimit = 0
+      this.path.allPath = new Set()
+      this.path.simplePath = new Set()
+      this.path.circlePath = new Set()
+      this.path.eulerPath = new Set()
       this.graph.vertexInput = this.graph.vertexInput.replace(/ +/g, ' ').trim()
       this.graph.edgeInput = this.graph.edgeInput.replace(/ +/g, ' ').trim()
     },
@@ -107,43 +111,32 @@ export default {
         this.button.loading = false
         return
       }
+
       const vertexes = this.graph.vertexInput.split(' ')
-      const mark = {}
       vertexes.forEach(v => {
-        vertexes.forEach(iv => (mark[iv] = -1))
+        const mark = {}
+        vertexes.forEach(iv => mark[iv] = iv === v ? 1 : 0)
         this.traverseGraph(v, [ v ], mark)
       })
       this.button.loading = false
     },
 
     checkPath (path, circle = false) {
-      if (path.length <= 1) {
-        return
-      }
-      this.path.allPath.push(path.join(''))
-      this.path[circle ? 'circlePath' : 'simplePath'].push(path.join(''))
+      this.path.allPath.add(path.join(''))
+      this.path[circle ? 'circlePath' : 'simplePath'].add(path.join(''))
     },
 
     traverseGraph (vertex, path, mark) {
-      console.log(vertex, path, mark)
-      this.checkPath(path, mark[vertex] === 1)
-      if (mark[vertex] !== -1) {
-        mark[vertex] += 1
-        return
-      }
-      mark[vertex] = 1
       for (let i = this.graph.next[vertex]; i !== -1; i = this.graph.edges[i].next) {
         const edge = this.graph.edges[i]
-        console.log('inner', edge, vertex)
-        // prevent illegal path such as `ABA`
-        if (path.length >= 2 && path[path.length - 2] === edge.to) {
-          continue
+        if (!path.includes(edge.to)) {
+          this.checkPath(_.concat(path, edge.to))
+          this.traverseGraph(edge.to, _.concat(path, edge.to), mark)
         }
-        path.push(edge.to)
-        this.traverseGraph(edge.to, path, mark)
-        path.pop()
+        else if (path[0] === edge.to && _.nth(path, -2) !== edge.to) {
+          this.checkPath(_.concat(path, edge.to), true)
+        }
       }
-      mark[vertex] = 2
     },
 
     validateGraph () {
@@ -181,15 +174,17 @@ export default {
           loadEdge({ from: edges[i][0], to: edges[i][1] })
           loadEdge({ from: edges[i][1], to: edges[i][0] })
         }
-        console.log(this.graph)
       }
       return suc
+    },
+
+    renderPaths (pathSet) {
+      return Array.from(pathSet).filter(p => !this.path.lenLimit || p.length === this.path.lenLimit + 1)
     }
   },
 
   watch: {
     'completeGraph.vertex' (val) {
-      console.log(val)
       const nums = _.filter(val.split(''), i => /\d/.test(i))
       if (nums.length <= 0) {
         this.completeGraph.edge = null
