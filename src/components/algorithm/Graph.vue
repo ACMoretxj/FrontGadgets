@@ -5,18 +5,35 @@
     <a-tabs defaultActiveKey="2">
       <a-tab-pane tab="完全图" key="1">
         <a-row type="flex" justify="center" align="middle">
-          <a-col :span="4">
+          <a-col :span="6">
             <a-input size="large" v-model="completeGraph.vertex" placeholder="请在此输入完全图顶点的个数"/>
           </a-col>
         </a-row>
         <a-row type="flex" justify="center" align="middle" style="margin-top: 15px;">
-          <a-col :span="4">
-            <a-input type="number" size="large" addonBefore="边的个数" :value="completeGraph.edge" disabled="true"/>
+          <a-col :span="6">
+            <a-input type="number" size="large" addonBefore="边的个数" :value="completeGraph.edges.size" disabled="true"/>
           </a-col>
         </a-row>
         <a-row type="flex" justify="center" align="middle" style="margin-top: 15px;">
-          <a-col :span="4">
-            <a-input type="number" size="large" addonBefore="对角线的个数" :value="completeGraph.diagonal" disabled="true"/>
+          <a-col :span="6">
+            <a-input type="number" size="large" addonBefore="对角线的个数" :value="completeGraph.diagonals.size" disabled="true"/>
+          </a-col>
+        </a-row>
+        <a-row type="flex" justify="center" align="middle" style="margin-top: 15px;">
+          <a-col :span="10">
+            <a-collapse>
+              <a-collapse-panel :header="`边: ${completeGraph.edges.size} 条`" key="1">
+                {{ Array.from(completeGraph.edges).join('\n') }}
+              </a-collapse-panel>
+              <a-collapse-panel :header="`对角线: ${completeGraph.diagonals.size} 条`" key="2">
+                {{ Array.from(completeGraph.diagonals).join('\n') }}
+              </a-collapse-panel>
+            </a-collapse>
+          </a-col>
+        </a-row>
+        <a-row type="flex" justify="center" align="middle" :hidden="!completeErrorMessage">
+          <a-col :span="10">
+            <a-alert :message="completeErrorMessage" type="error" style="margin-top: 15px;"/>
           </a-col>
         </a-row>
       </a-tab-pane>
@@ -79,11 +96,12 @@ export default {
   components: { ARow, ACol },
   data () {
     return {
-      completeGraph: { vertex: null, edge: null, diagonal: null },
+      completeGraph: { vertex: null, edges: new Set(), diagonals: new Set() },
       button: { text: '计算路径', alias: 'generate-expression', handler: this.calculatePath, disabled: false, loading: false },
       // represent a graph with adjacent table
       graph: { maxVertex: 16, vertexInput: 'A B C D E F', edgeInput: 'AC AD BD DE DF EF', edges: [], next: {} },
       path: { lenLimit: 0, allPath: new Set(), simplePath: new Set(), circlePath: new Set(), eulerPath: new Set() },
+      completeErrorMessage: null,
       errorMessage: null
     }
   },
@@ -187,12 +205,26 @@ export default {
     'completeGraph.vertex' (val) {
       const nums = _.filter(val.split(''), i => /\d/.test(i))
       if (nums.length <= 0) {
-        this.completeGraph.edge = null
+        this.completeErrorMessage = '输入错误，请再次检查'
         return
       }
       this.completeGraph.vertex = val = parseInt(nums.join(''))
-      this.completeGraph.edge = val * (val - 1) / 2
-      this.completeGraph.diagonal = this.completeGraph.edge - val
+      if (val > 26) {
+        this.completeErrorMessage = '顶点数过多(>26)，请重新输入'
+        return
+      }
+      this.completeGraph.edges = new Set()
+      this.completeGraph.diagonals = new Set()
+      for (let i = 0; i < val; ++ i) {
+        const start = String.fromCharCode('A'.charCodeAt(0) + i)
+        for (let j = i + 1; j < val; ++ j) {
+          const end = String.fromCharCode('A'.charCodeAt(0) + j)
+          this.completeGraph.edges.add(start + end)
+          if (j > i + 1 && j !== (i + val - 1) % val) {
+            this.completeGraph.diagonals.add(start + end)
+          }
+        }
+      }
     }
   }
 }
