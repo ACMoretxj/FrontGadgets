@@ -10,7 +10,7 @@ import PolishExpr from '../components/algorithm/PolishExpr'
 import NumberBase from '../components/algorithm/NumberBase'
 import Security from '../components/security/Index'
 import PasswordGenerator from '../components/security/PasswordGenerator'
-import Graph from '../components/algorithm/Graph'
+import Graph from '../components/algorithm/graph/Index'
 
 Vue.use(Router)
 
