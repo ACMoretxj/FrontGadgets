@@ -11,6 +11,9 @@
       <a-tab-pane tab="路径和环" key="3">
         <graph-path/>
       </a-tab-pane>
+      <a-tab-pane tab="图的度" key="4">
+        <graph-degree/>
+      </a-tab-pane>
     </a-tabs>
   </div>
 </template>
@@ -20,11 +23,11 @@ import ACol from 'ant-design-vue/es/grid/Col'
 import ARow from 'ant-design-vue/es/grid/Row'
 import CompleteGraph from './CompleteGraph'
 import GraphPath from './Path'
-import _ from 'lodash'
+import GraphDegree from './Degree'
 
 export default {
   name: 'Graph',
-  components: { ARow, ACol, CompleteGraph, GraphPath }
+  components: { ARow, ACol, CompleteGraph, GraphPath, GraphDegree }
 }
 </script>
 

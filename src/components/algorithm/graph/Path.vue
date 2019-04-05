@@ -45,9 +45,10 @@
 </template>
 
 <script>
+import _ from 'lodash'
 import ACol from 'ant-design-vue/es/grid/Col'
 import ARow from 'ant-design-vue/es/grid/Row'
-import _ from 'lodash'
+import graphAlgo from '../../../core/algorithm/graph'
 
 export default {
   name: 'Path',
@@ -92,6 +93,7 @@ export default {
         const mark = {}
         vertexes.forEach(iv => (mark[iv] = iv === v ? 1 : 0))
         this.traverseGraph(v, [ v ], mark)
+        this.traverseEulerPath(v, [ v ], new Set())
       })
       this.button.loading = false
     },
@@ -109,6 +111,33 @@ export default {
           this.traverseGraph(edge.to, _.concat(path, edge.to), mark)
         } else if (path[0] === edge.to && _.nth(path, -2) !== edge.to) {
           this.checkPath(_.concat(path, edge.to), true)
+        }
+      }
+    },
+
+    traverseEulerPath (vertex, path, edges) {
+      // finished current euler path
+      if (edges.size >= this.graph.edges.length / 2) {
+        this.path.eulerPath.add(path.join(''))
+        console.log(Array.from(edges).join('|'))
+        return
+      }
+
+      for (let i = this.graph.next[vertex]; i !== -1; i = this.graph.edges[i].next) {
+        const edge = this.graph.edges[i]
+        const pastCount = path.filter(v => v === edge.to).length
+        // 1. every vertex in the path appears at most twice
+        // 2. the repeated vertex distance is bigger than 2
+        if (pastCount < 2 && (path.length < 2 || _.nth(path, -2) !== edge.to)) {
+          const edgeStr = [ vertex, edge.to ].sort().join('')
+          if (edges.has(edgeStr)) {
+            continue
+          }
+          path.push(edge.to)
+          edges.add(edgeStr)
+          this.traverseEulerPath(edge.to, path, edges)
+          edges.delete(edgeStr)
+          path.pop()
         }
       }
     },
@@ -138,16 +167,9 @@ export default {
       if (suc) {
         const vertexes = this.graph.vertexInput.replace(/ +/g, ' ').split(' ')
         const edges = this.graph.edgeInput.replace(/ +/g, ' ').split(' ')
-        vertexes.forEach(v => (this.graph.next[v] = -1))
-        const loadEdge = edge => {
-          const last = this.graph.next[edge.from]
-          this.graph.edges.push(_.extend(edge, { next: last }))
-          this.graph.next[edge.from] = this.graph.edges.length - 1
-        }
-        for (let i = 0; i < edges.length; ++i) {
-          loadEdge({ from: edges[i][0], to: edges[i][1] })
-          loadEdge({ from: edges[i][1], to: edges[i][0] })
-        }
+        const result = graphAlgo.parse(vertexes, edges)
+        this.graph.next = result.next
+        this.graph.edges = result.edges
       }
       return suc
     },
