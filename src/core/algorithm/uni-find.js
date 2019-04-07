@@ -7,7 +7,7 @@ class UniFind {
     points.forEach(p => (this.father[p] = p))
   }
 
-  union () {
+  union (x, y) {
     const fx = this.find(x)
     const fy = this.find(y)
     if (fx !== fy) {

@@ -6,7 +6,8 @@
       <a-tab-pane tab="完全图" key="1">
         <complete-graph/>
       </a-tab-pane>
-      <a-tab-pane tab="图的表示" key="2">
+      <a-tab-pane tab="图的生成" key="2">
+        <graph-generator/>
       </a-tab-pane>
       <a-tab-pane tab="路径和环" key="3">
         <graph-path/>
@@ -24,10 +25,11 @@ import ARow from 'ant-design-vue/es/grid/Row'
 import CompleteGraph from './CompleteGraph'
 import GraphPath from './Path'
 import GraphDegree from './Degree'
+import GraphGenerator from './Generator'
 
 export default {
   name: 'Graph',
-  components: { ARow, ACol, CompleteGraph, GraphPath, GraphDegree }
+  components: { ARow, ACol, CompleteGraph, GraphPath, GraphDegree, GraphGenerator }
 }
 </script>
 

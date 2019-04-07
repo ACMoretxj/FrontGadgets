@@ -13,9 +13,16 @@
         <a-button type="primary" :size="'large'" :disabled="button.disabled" :loading="button.loading" @click="button.handler(button)">{{ button.text }}</a-button>
       </a-col>
     </a-row>
+    <a-row :gutter="4" type="flex" justify="center" align="middle" style="margin-bottom: 15px;">
+      <a-radio-group @change="onFilterChange" v-model="filterValue">
+        <a-radio :value="'all'">全部</a-radio>
+        <a-radio :value="'odd'">奇数度</a-radio>
+        <a-radio :value="'even'">偶数度</a-radio>
+      </a-radio-group>
+    </a-row>
     <a-row :gutter="4" type="flex" justify="center" align="middle">
       <a-col :span="10">
-        <a-table :columns="table.columns" :dataSource="table.data">
+        <a-table :columns="table.columns" :dataSource="table.data" :pagination="false">
         </a-table>
       </a-col>
     </a-row>
@@ -38,7 +45,9 @@ export default {
       button: { text: '计算度', alias: 'calculate-degree', handler: this.calculateDegree, disabled: false, loading: false },
       // represent a graph with adjacent table
       graph: { maxVertex: 16, vertexInput: 'A B C D E F', edgeInput: 'AB AC AE BD CF DE DF', edges: [], next: {} },
+      originData: [],
       table: { columns: [], data: [] },
+      filterValue: 'all',
       errorMessage: null
     }
   },
@@ -98,6 +107,7 @@ export default {
       this.button.loading = true
       this.errorMessage = null
       this.table.data = []
+      this.originData = []
       await new Promise(resolve => setTimeout(resolve, 500))
 
       const suc = this.parseGraph()
@@ -114,10 +124,21 @@ export default {
         }
         item.degree = item.adjacentVertexes.length
         item.adjacentVertexes = item.adjacentVertexes.sort().join(' ')
+        this.originData.push(item)
         this.table.data.push(item)
       }
 
       this.button.loading = false
+    },
+
+    onFilterChange (e) {
+      if (e.target.value === 'all') {
+        this.table.data = this.originData
+      } else if (e.target.value === 'even') {
+        this.table.data = this.originData.filter(item => !(item.degree % 2))
+      } else {
+        this.table.data = this.originData.filter(item => item.degree % 2)
+      }
     }
   }
 }
