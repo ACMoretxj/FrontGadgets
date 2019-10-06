@@ -47,7 +47,7 @@
 import vis from 'vis'
 import _ from 'lodash'
 import UniFind from '../../../core/algorithm/uni-find'
-import ACol from "ant-design-vue/es/grid/Col";
+import ACol from 'ant-design-vue/es/grid/Col'
 
 export default {
   name: 'GraphGenerator',
