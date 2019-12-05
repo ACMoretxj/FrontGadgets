@@ -11,6 +11,8 @@ import NumberBase from '../components/algorithm/NumberBase'
 import Security from '../components/security/Index'
 import PasswordGenerator from '../components/security/PasswordGenerator'
 import Graph from '../components/algorithm/graph/Index'
+import Effect from '@/components/effect'
+import WarpDrive from '@/components/effect/warp-drive'
 
 Vue.use(Router)
 
@@ -74,6 +76,18 @@ export default new Router({
           path: 'password-generator/',
           name: 'security-password-generator',
           component: PasswordGenerator
+        }
+      ]
+    },
+    {
+      path: '/effect/',
+      name: 'effect',
+      component: Effect,
+      children: [
+        {
+          path: 'warp-drive/',
+          name: 'effect-warp-drive',
+          component: WarpDrive
         }
       ]
     }

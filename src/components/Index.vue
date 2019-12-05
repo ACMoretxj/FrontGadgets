@@ -44,6 +44,12 @@ export default {
           content: [
             { name: '密码生成器', link: { name: 'security-password-generator' } }
           ]
+        },
+        {
+          category: 'Fantastic Effects',
+          content: [
+            { name: '曲率航行', link: { name: 'effect-warp-drive' } }
+          ]
         }
       ]
     }
