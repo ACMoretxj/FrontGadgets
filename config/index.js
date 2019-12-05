@@ -9,7 +9,7 @@ module.exports = {
 
     // Paths
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/',
+    assetsPublicPath: '/front-gadgets/',
     proxyTable: {},
 
     // Various Dev Server settings

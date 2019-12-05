@@ -1,3 +1,4 @@
 module.exports = {
-  // publicPath: '/front-gadgets/'
+  baseUrl: '/front-gadgets/',
+  publicPath: '/front-gadgets/'
 }
